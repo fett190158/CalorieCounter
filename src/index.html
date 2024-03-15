@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calorie Counter</title>
+</head>
+<body>
+    <h1>Calorie Counter</h1>
+    <p>Total Calories: {{ calories }}</p>
+    
+    <form method="post" action="/add_calories">
+        <label for="calories">Add Calories:</label>
+        <input type="number" id="calories" name="calories" required>
+        <button type="submit">Add</button>
+    </form>
+    
+    <form method="post" action="/reset_calories">
+        <button type="submit">Reset</button>
+    </form>
+</body>
+</html>
