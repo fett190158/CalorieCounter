@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Total Calories</title>
+</head>
+<body>
+    <h1>Total Calories</h1>
+    <h2>Food List:</h2>
+    <ul>
+        {% for food in food_list %}
+        <li>{{ food.name }} ({{ food.grams }}g) - {{ food.calories }} ckal</li>
+        {% endfor %}
+    </ul>
+    <h2>Total Calories: {{ total_calories }} ckal</h2>
+    <a href="/">Back to Calculator</a>
+</body>
+</html>

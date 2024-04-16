@@ -1,22 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calorie Counter</title>
+    <title>Calorie Calculator</title>
 </head>
 <body>
-    <h1>Calorie Counter</h1>
-    <p>Total Calories: {{ calories }}</p>
-    
-    <form method="post" action="/add_calories">
-        <label for="calories">Add Calories:</label>
-        <input type="number" id="calories" name="calories" required>
-        <button type="submit">Add</button>
+    <h1>Calorie Calculator</h1>
+    <form method="POST" action="/">
+        <label for="food_name">Enter Food:</label>
+        <input type="text" id="food_name" name="food_name" required><br><br>
+        <label for="grams">Enter Grams:</label>
+        <input type="number" id="grams" name="grams" required><br><br>
+        <button type="submit">Add Food</button>
     </form>
-    
-    <form method="post" action="/reset_calories">
-        <button type="submit">Reset</button>
+
+    {% if food_list %}
+    <h2>Food List:</h2>
+    <ul>
+        {% for food in food_list %}
+        <li>{{ food.name }} ({{ food.grams }}g) - {{ food.calories }} ckal</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="POST" action="/">
+        <input type="hidden" name="food_name" value="break">
+        <input type="hidden" name="grams" value="0">
+        <button type="submit">Calculate Total Calories</button>
     </form>
 </body>
 </html>

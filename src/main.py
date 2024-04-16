@@ -1,82 +1,37 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-from werkzeug.security import generate_password_hash, check_password_hash
-import sqlite3
+import requests
+from flask import Flask, request, render_template
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'
 
-# Database connection
-conn = sqlite3.connect('database.db')
-print("Opened database successfully")
+def get_calories(food_name):
+    url = "https://dietagram.p.rapidapi.com/apiFood.php"
+    querystring = {"name": food_name, "lang": "de"}
+    headers = {
+        "X-RapidAPI-Key": "d7ba395c72mshe67acba0ccfc242p172e6bjsndaf1a2106f77",
+        "X-RapidAPI-Host": "dietagram.p.rapidapi.com"
+    }
+    response = requests.get(url, headers=headers, params=querystring)
+    return int(response.json()["dishes"][0]["caloric"])
 
-# Create users table if not exists
-conn.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL,
-        password TEXT NOT NULL
-    );
-''')
-print("Table created successfully")
+@app.route("/", methods=["GET", "POST"])
+def home():
+    total_calories = 0
+    food_list = []
 
-# Create calories table if not exists
-conn.execute('''
-    CREATE TABLE IF NOT EXISTS calories (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        calories INTEGER NOT NULL,
-        FOREIGN KEY (user_id) REFERENCES users (id)
-    );
-''')
-print("Table created successfully")
-conn.close()
+    if request.method == "POST":
+        food_name = request.form["food_name"]
+        grams = request.form["grams"]
 
-@app.route('/')
-def index():
-    if 'username' in session:
-        return redirect(url_for('index'))
-    else:
-        return redirect(url_for('login'))
+        if food_name == "break":
+            # Calculate and display total calories for all foods
+            for food_item in food_list:
+                total_calories += food_item["calories"]
+            return render_template("result.html", food_list=food_list, total_calories=total_calories)
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        conn = sqlite3.connect('database.db')
-        cur = conn.cursor()
-        cur.execute('SELECT * FROM users WHERE username = ?', (username,))
-        user = cur.fetchone()
-        conn.close()
-        if user and check_password_hash(user[2], password):
-            session['username'] = username
-            return redirect(url_for('index'))
-        else:
-            return render_template('login.html', error='Invalid username or password')
-    return render_template('login.html')
+        food_calories = get_calories(food_name) / 100 * int(grams)
+        food_list.append({"name": food_name, "grams": grams, "calories": food_calories})
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = generate_password_hash(request.form['password'])
-        conn = sqlite3.connect('database.db')
-        cur = conn.cursor()
-        cur.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, password))
-        conn.commit()
-        conn.close()
-        return redirect(url_for('login'))
-    return render_template('register.html')
+    return render_template("index.html")
 
-@app.route('/add_calories', methods=['POST'])
-def add_calories():
-    # Add calories functionality here
-    pass
-
-@app.route('/reset_calories', methods=['POST'])
-def reset_calories():
-    # Reset calories functionality here
-    pass
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
